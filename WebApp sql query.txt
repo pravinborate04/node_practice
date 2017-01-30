@@ -1,0 +1,11 @@
+
+show databases;
+
+create database usersdb;
+
+use usersdb;
+
+
+create table users (id int not null, username varchar(20) not null, password varchar(20) not null);
+
+insert into users (username,password,gender) values("jayesh","jayeshk123","M");
