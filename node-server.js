@@ -1,6 +1,7 @@
 const express = require('express')
 const testplugin=require('./views/js/testcordovaplugin.js')  
 var fs = require("fs");  
+var mysql      = require('mysql');
 const app = express()  
 const port = 3000
 
@@ -44,6 +45,14 @@ app.get('/my2html.html', (request, response) => {
   response.sendfile('views/my2html.html');
 })
 
+app.get('/homepage.html', (request, response) => {  
+  response.sendfile('views/homepage.html');
+})
+
+app.get('/signup.html', (request, response) => {  
+  response.sendfile('views/signup.html');
+})
+
 app.get('/api/users', function(req, res) {
   res.setHeader('Content-Type', 'application/json');
   var user_id = req.param('id');
@@ -65,3 +74,92 @@ app.post('/api/users', function(req, res) {
         }));
 });
 app.use(express.static(__dirname + '/static'));
+
+var connection = mysql.createConnection({
+  host     : 'localhost',
+  user     : 'root',
+  password : 'root',
+  database : 'usersdb'
+});
+
+connection.query('SELECT * FROM users', function(err, rows, fields) 
+{
+  if (err) throw err;
+
+  console.log(rows[0]);
+});
+function checkUser(username,password,callback){
+connection.query('SELECT * FROM users where username= "'+username+'" and password="'+password+'"', function(err, rows, fields) 
+{
+  if (err) throw err;
+
+  console.log(rows[0]);
+  if(rows[0]===undefined){
+  console.log('no user found');
+	callback(false);
+  }else{
+  console.log('user found');
+	callback(true);
+  }
+});
+}
+
+app.get('/',function(request,response){
+response.sendfile('views/login.html');
+});
+
+app.post('/check', function(req, res) {
+	var username = req.body.username;
+    var password = req.body.password;
+	
+	res.setHeader('Content-Type', 'application/json');
+	checkUser(username,password,function(str){
+		console.log('callback',str);
+		if(str){
+		res.send(JSON.stringify({
+            username: username || null,
+            password: password|| null
+        }));
+		}else{
+		res.send(JSON.stringify({
+            username: 'not valid'|| null
+        }));
+		}
+	});
+		
+});
+
+app.post('/login',function(req,res){
+var username = req.body.firstname;
+    var password = req.body.password;
+	
+	res.setHeader('Content-Type', 'application/json');
+	console.log('/login'+username,' '+password);
+	checkUser(username,password,function(str){
+		console.log('callback',str);
+		if(str){
+		 res.redirect('/homepage.html');
+		}else{
+		res.redirect('/signup.html');
+		}
+	});
+	
+});
+
+app.post('/signup',function(req,res){
+	var username = req.body.username;
+    var password = req.body.password;
+	var gender=req.body.sex;
+	res.setHeader('Content-Type', 'application/json');
+	console.log('/signup '+username,' '+password+'  '+gender);	
+	connection.query('insert into users (username,password,gender) values("'+username+'","'+password+'","'+gender+'")', function(err, rows, fields) 
+	{
+		if (err) throw err;
+		res.redirect('/');
+	});
+	
+});
+
+
+
+
