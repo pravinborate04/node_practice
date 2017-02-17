@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/pravinborate04/node_practice/issues"
   },
-  "homepage": "https://github.com/pravinborate04/node_practice#readme"
+  "homepage": "https://github.com/pravinborate04/node_practice#readme",
+  "dependencies": {
+    "client-sessions": "^0.7.0"
+  }
 }
